@@ -2,10 +2,12 @@ import Card from "../Card/card.jsx"
 import { useState, useEffect } from "react";
 
 export default function Game() {
-    let [clicked, setClicked] = useState(Array(9).fill(false));
-    let [score, setScore] = useState(0);
-    let [bestScore, setBestScore] = useState(0);
-    let [board, setBoard] = useState([])
+    const [clicked, setClicked] = useState(Array(9).fill(false));
+    const [score, setScore] = useState(0);
+    const [bestScore, setBestScore] = useState(0);
+    const [cardArray, setCardArray] = useState([])
+    const board = createBoard(cardArray)
+    console.log(board)
 
     // TODO make sure useEffect is only called once (only need to fetch APIs once)
 
@@ -18,22 +20,6 @@ export default function Game() {
     */
 
     useEffect(() => {
-        // let params = ["dog", "cat"];
-
-        /*
-        async function getUrls(param, idx) {
-            let apiUrl = "https://api.giphy.com/v1/gifs/search?api_key=zbfkEK4GgP5FAn40a0vIVmqii0fssvpX&q=" + param;
-
-            const response = await fetch(apiUrl);
-            console.log("response: ");
-            console.log(response);
-
-            const json = await response.json();
-            console.log("json: ");
-            console.log(json);
-            return {url: json.data[0].images.original.url, id: idx};
-        }
-        */
 
         async function fetchPic(idx) {
             let apiUrl = "https://dog.ceo/api/breeds/image/random";
@@ -50,9 +36,8 @@ export default function Game() {
         }
 
         Promise.all(pics).then(pics => {
-            shuffle(pics);
-            let newBoard = addToBoard(pics);
-            setBoard(newBoard);
+            const newPics = shuffle(pics);
+            setCardArray(newPics);
             // TODO shuffle, add to board
         });
     }, [])
@@ -65,11 +50,15 @@ export default function Game() {
             if (score + 1 > bestScore) {
                 setBestScore(score + 1);
             }
-            clicked[key] = true;
+            const newClicked = [...clicked]
+            newClicked[key] = true
+            setClicked(newClicked)
+            setCardArray(shuffle(cardArray))
         } else {      
             // reset score, mark all cards as "not clicked"
             setScore(0);
             setClicked([Array(9).fill(false)]);
+            setCardArray(shuffle(cardArray))
         }
 
         
@@ -77,20 +66,21 @@ export default function Game() {
 
     function shuffle(array) {
         let currentIndex = array.length;
-
+        const newArray = [...array]
         // While there remain elements to shuffle...
         while (currentIndex != 0) {
             // Pick a remaining element...
-            let randomIndex = Math.floor(Math.random() * currentIndex);
+            const randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex--;
 
             // And swap it with the current element.
-            [array[currentIndex], array[randomIndex]] = [
-                array[randomIndex], array[currentIndex]];
+            [newArray[currentIndex], newArray[randomIndex]] = [newArray[randomIndex], newArray[currentIndex]];
         }
+        return newArray
     }
 
-    function addToBoard(arr) {
+    function createBoard(arr) {
+        if (arr.length === 0) return;
         let newBoard = [];
         for (let i = 0; i < 3; i++) {
             let row = []
@@ -113,8 +103,8 @@ export default function Game() {
     return (
     <>
         {board}
-        <>{score}</>
-        <>{bestScore}</>
+        <><h1>Score: </h1>{score}</>
+        <><h1>Best Score: </h1>{bestScore}</>
     </>);
 }
 

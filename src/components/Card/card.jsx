@@ -1,3 +1,3 @@
 export default function Card({url, onCardClick}) {
-    return <img src = {url} onClick={onCardClick}/>;
+    return <img height={100} width={100} src = {url} onClick={onCardClick}/>;
 }
