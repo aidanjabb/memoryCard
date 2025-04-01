@@ -7,57 +7,59 @@ export default function Game() {
     let [bestScore, setBestScore] = useState(0);
     let [board, setBoard] = useState([])
 
-    // when is useEffect called w.r.t rest of code?
-    
+    // TODO make sure useEffect is only called once (only need to fetch APIs once)
+
+    // TODO if useEffect is called after render, does that mean that on the first render, our board will be empty? (since we haven't fetched the APIs yet)
+
+    /*
+    TODO inside useEffect:
+        fetch all APIs
+        add to board
+    */
+
     useEffect(() => {
-        console.log("here");
+        // let params = ["dog", "cat"];
 
-        let params = ["dog", "cat", "mouse", "squirrel", "pigeon", "rat", "fish", "bear", "lizard"];
-
+        /*
         async function getUrls(param, idx) {
             let apiUrl = "https://api.giphy.com/v1/gifs/search?api_key=zbfkEK4GgP5FAn40a0vIVmqii0fssvpX&q=" + param;
+
             const response = await fetch(apiUrl);
             console.log("response: ");
             console.log(response);
+
             const json = await response.json();
             console.log("json: ");
             console.log(json);
             return {url: json.data[0].images.original.url, id: idx};
         }
+        */
 
-        // fetch GIFs
-
-        const gifPromises = [];
-        for (let i = 0; i < params.length; i++) {
-            let url = getUrls(params[i], i);
-            console.log("url: ");
-            console.log(url);
-            gifPromises.push(url);
+        async function fetchPic(idx) {
+            let apiUrl = "https://dog.ceo/api/breeds/image/random";
+            const response = await fetch(apiUrl);
+            const json = await response.json();
+            return {url: json.message, id: idx};
         }
 
-        // randomly rearrange gifs, add to board
-        /*
-        Promise.all(gifPromises).then(function(gifs) {
-            shuffle(gifs);
-            let newBoard = [];
-            for (let i = 0; i < 3; i++) {
-                let row = []
-                for (let j = 0; j < 3; j++) {
-                    let k = 3*i + j;
-                    row.push(<Card key={gifs[k].id} url={gifs[k].url}
-                        onCardClick={() => handleClick(gifs[k].id)} 
-                    />)
-                }
-                newBoard.push(<div key={i}>{row}</div>)
-            }  
+        // fetch pics
+        const pics = [];
+        for (let i = 0; i < 9; i++) {
+            let pic = fetchPic(i);
+            pics.push(pic);
+        }
 
+        Promise.all(pics).then(pics => {
+            shuffle(pics);
+            let newBoard = addToBoard(pics);
             setBoard(newBoard);
+            // TODO shuffle, add to board
         });
-        */
     }, [])
 
     function handleClick(key) {
-        if (!clicked[key]) {   
+        if (!clicked[key]) {  
+            console.log("not already clicked") 
             // increment score, update best score if nec., mark card "clicked"
             setScore(score + 1);
             if (score + 1 > bestScore) {
@@ -69,6 +71,8 @@ export default function Game() {
             setScore(0);
             setClicked([Array(9).fill(false)]);
         }
+
+        
     }
 
     function shuffle(array) {
@@ -76,7 +80,6 @@ export default function Game() {
 
         // While there remain elements to shuffle...
         while (currentIndex != 0) {
-      
             // Pick a remaining element...
             let randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex--;
@@ -85,6 +88,22 @@ export default function Game() {
             [array[currentIndex], array[randomIndex]] = [
                 array[randomIndex], array[currentIndex]];
         }
+    }
+
+    function addToBoard(arr) {
+        let newBoard = [];
+        for (let i = 0; i < 3; i++) {
+            let row = []
+            for (let j = 0; j < 3; j++) {
+                let k = 3*i + j;
+                row.push(<Card key={arr[k].id} url={arr[k].url}
+                    onCardClick={() => handleClick(arr[k].id)} 
+                />)
+            }
+            newBoard.push(<div key={i}>{row}</div>)
+        }
+        console.log(newBoard);
+        return newBoard
     }
 
     /*
